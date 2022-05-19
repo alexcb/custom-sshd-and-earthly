@@ -1,0 +1,4 @@
+#!/bin/sh
+printf '%s\n' "Hi $USER! You've successfully authenticated, this is an example git-sshd which has no shell access"
+exit 128
+EOF

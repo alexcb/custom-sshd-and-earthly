@@ -1,0 +1,29 @@
+VERSION 0.6
+
+sshd:
+    FROM alpine:3.15
+
+    RUN apk add --update --no-cache openssh git
+    RUN ssh-keygen -A
+
+    # generate user keys
+    #RUN ssh-keygen -t ed25519 -f /root/self-hosted-ed25519-key -q -N "" -C "ed25519-testkey"
+
+    # generate sshd keys
+    RUN mkdir /etc/sshd_keys
+    RUN ssh-keygen -t ed25519 -f /etc/sshd_keys/sshd_ed25519_key -q -N "" -C "example-git-host"
+
+    RUN adduser --disabled-password --gecos "" git && \
+        mkdir ~git/.ssh && \
+        > ~git/.ssh/authorized_keys && \
+        chmod 600 ~git/.ssh/authorized_keys && \
+        chown git:git ~git/.ssh/authorized_keys && \
+        sed -i 's/\(git:.*\):\/bin\/ash/\1:\/usr\/bin\/git-shell/g' /etc/passwd && \
+        passwd git -u
+
+    COPY no-interactive-login /home/git/git-shell-commands/no-interactive-login
+    COPY sshd_config /etc/ssh/sshd_config
+    COPY entrypoint.sh /
+    ARG EARTHLY_GIT_HASH
+    SAVE IMAGE alexcb132/gitsshd:$EARTHLY_GIT_HASH
+

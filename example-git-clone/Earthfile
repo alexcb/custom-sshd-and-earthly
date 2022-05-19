@@ -1,0 +1,7 @@
+VERSION 0.6
+
+test:
+    FROM alpine
+    GIT CLONE git@myserver:user/repo.git /repo
+    RUN ls -la /repo/data
+    RUN cat /repo/data | base64 -d
